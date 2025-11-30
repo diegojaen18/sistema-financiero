@@ -24,4 +24,4 @@ define('ROLE_GERENTE', 'Gerente Financiero');
 define('ROLE_AUDITOR', 'Auditor');
 
 // Cargar funciones helper
-require_once ROOT_PATH . '/src/Utils/helpers.php';
+require_once __DIR__ . "/../src/Utils/helpers.php";
