@@ -1,17 +1,25 @@
 <?php
-/**
- * Logout - Cerrar Sesión
- * Sistema Financiero - UTP
- */
+// public/logout.php
 
-require_once __DIR__ . '/../config/security.php';
-require_once __DIR__ . '/../src/Security/SessionManager.php';
+require_once __DIR__ . '/../config/constants.php';
+require_once BASE_PATH . '/config/database.php';
 
-use SistemaFinanciero\Security\SessionManager;
+// Misma lista de requires que en login.php, para que carguen TODAS las clases necesarias
+require_once BASE_PATH . '/src/Database/Connection.php';
 
-// Destruir sesión
-SessionManager::destroy();
+require_once BASE_PATH . '/src/Interfaces/ValidatorInterface.php';
 
-// Redirigir a login con mensaje
-header('Location: login.php');
-exit;
+require_once BASE_PATH . '/src/Security/Validator.php';
+require_once BASE_PATH . '/src/Security/Sanitizer.php';
+require_once BASE_PATH . '/src/Security/SessionManager.php';
+
+require_once BASE_PATH . '/src/Repositories/UserRepository.php';
+
+require_once BASE_PATH . '/src/Services/AuthService.php';
+
+require_once BASE_PATH . '/src/Controllers/AuthController.php';
+
+use App\Controllers\AuthController;
+
+$controller = new AuthController();
+$controller->logout();

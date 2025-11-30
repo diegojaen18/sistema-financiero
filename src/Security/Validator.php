@@ -1,20 +1,43 @@
 <?php
-namespace src\Security;
+// src/Security/Validator.php
 
-use src\Interfaces\ValidatorInterface.php;
+namespace App\Security;
 
-class Validator implements ValidatorInterface {
-    public function validate(array $data): array {
-        $errors = [];
+use App\Interfaces\ValidatorInterface;
 
-        if (empty($data['username'])) {
-            $errors[] = "Username is required";
+class Validator implements ValidatorInterface
+{
+    private array $errors = [];
+
+    public function validateRequired(array $data, array $fields): array
+    {
+        $this->errors = [];
+
+        foreach ($fields as $field) {
+            if (!isset($data[$field]) || trim($data[$field]) === '') {
+                $this->errors[$field] = "El campo {$field} es obligatorio.";
+            }
         }
 
-        if (empty($data['password'])) {
-            $errors[] = "Password is required";
+        return $this->errors;
+    }
+
+    public function validateEmail(string $email, string $fieldName = 'email'): array
+    {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->errors[$fieldName] = 'El correo electrónico no es válido.';
         }
 
-        return $errors;
+        return $this->errors;
+    }
+
+    public function getErrors(): array
+    {
+        return $this->errors;
+    }
+
+    public function hasErrors(): bool
+    {
+        return !empty($this->errors);
     }
 }

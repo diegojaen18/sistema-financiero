@@ -1,25 +1,34 @@
 <?php
-session_start();
-$error = $_SESSION['login_error'] ?? null;
-unset($_SESSION['login_error']);
-?>
-<!DOCTYPE html>
-<html>
-<head>
-    <link rel="stylesheet" href="assets/css/style.css">
-</head>
-<body>
-    <div class="login-box">
-        <h2>Financial System Login</h2>
-        <?php if($error): ?>
-            <p class="error"><?php echo $error; ?></p>
-        <?php endif; ?>
+// public/login.php
 
-        <form action="AuthController.php" method="POST">
-            <input type="text" name="username" placeholder="Enter username">
-            <input type="password" name="password" placeholder="Enter password">
-            <button type="submit">Login</button>
-        </form>
-    </div>
-</body>
-</html>
+require_once __DIR__ . '/../config/constants.php';
+require_once BASE_PATH . '/config/database.php';
+
+// Autoload sencillo con requires (sin Composer)
+require_once BASE_PATH . '/src/Database/Connection.php';
+require_once BASE_PATH . '/src/Interfaces/ValidatorInterface.php';
+require_once BASE_PATH . '/src/Security/Validator.php';
+require_once BASE_PATH . '/src/Security/Sanitizer.php';
+require_once BASE_PATH . '/src/Security/SessionManager.php';
+require_once BASE_PATH . '/src/Repositories/UserRepository.php';
+require_once BASE_PATH . '/src/Services/AuthService.php';
+require_once BASE_PATH . '/src/Controllers/AuthController.php';
+
+// Usos de namespaces
+use App\Controllers\AuthController;
+use App\Security\SessionManager;
+
+// Iniciar sesión (por si ya está logueado)
+SessionManager::start();
+if (SessionManager::has('user_id')) {
+    header('Location: dashboard.php');
+    exit;
+}
+
+$controller = new AuthController();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $controller->handleLogin();
+} else {
+    $controller->showLogin();
+}

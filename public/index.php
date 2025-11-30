@@ -1,84 +1,32 @@
 <?php
-/**
- * Punto de entrada público - Página principal
- * Sistema Financiero - UTP
- */
-
-// Cargar configuración
-require_once __DIR__ . '/../config/database.php';
+// public/index.php
 require_once __DIR__ . '/../config/constants.php';
-
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= APP_NAME ?> - Inicio</title>
+    <title>Bienvenido - <?= APP_NAME ?></title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body>
-    
-    <div class="container" style="margin-top: 50px;">
-        <div style="text-align: center;">
-            <div style="font-size: 72px;">💼</div>
-            <h1>Sistema Financiero de Contabilidad</h1>
-            <h2>Universidad Tecnológica de Panamá</h2>
-            <p class="text-muted">Facultad de Ingeniería en Sistemas Computacionales</p>
-        </div>
-        
-        <div class="card mt-3" style="max-width: 800px; margin: 0 auto;">
-            <div class="card-header">
-                ¿Por qué registrar tus transacciones?
-            </div>
-            <div class="card-body">
-                
-                <p><strong>La contabilidad organizada permite:</strong></p>
-                
-                <ul style="line-height: 2;">
-                    <li>✓ Tomar decisiones informadas basadas en datos reales</li>
-                    <li>✓ Cumplir con obligaciones fiscales y legales</li>
-                    <li>✓ Detectar fraudes y errores oportunamente</li>
-                    <li>✓ Planificar el futuro financiero de tu empresa</li>
-                    <li>✓ Obtener financiamiento con reportes confiables</li>
-                    <li>✓ Medir el rendimiento del negocio</li>
-                </ul>
-                
-                <hr>
-                
-                <h3>Nuestro sistema te ofrece:</h3>
-                
-                <div class="row mt-2">
-                    <div class="col-6">
-                        <p>✓ Registro de transacciones con partida doble</p>
-                        <p>✓ Generación automática de reportes financieros</p>
-                        <p>✓ Control de acceso por roles</p>
-                    </div>
-                    <div class="col-6">
-                        <p>✓ Firma digital de documentos</p>
-                        <p>✓ Auditoría completa de operaciones</p>
-                        <p>✓ Interfaz intuitiva y fácil de usar</p>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-3">
-                    <a href="login.php" class="btn btn-primary btn-lg">
-                        Ingresar al Sistema →
-                    </a>
-                </div>
-                
-            </div>
-        </div>
-        
-        <div class="text-center mt-3">
-            <small class="text-muted">
-                <strong><?= APP_NAME ?></strong> versión <?= APP_VERSION ?><br>
-                Departamento de Ingeniería de Software<br>
-                © <?= date('Y') ?> - Todos los derechos reservados
-            </small>
-        </div>
-        
-    </div>
-    
+<body class="public-body">
+    <header class="public-header">
+        <h1><?= APP_NAME ?></h1>
+        <p>Sistema para registrar y controlar las transacciones financieras de una empresa.</p>
+        <a href="login.php" class="btn btn-primary">Entrar al sistema</a>
+    </header>
+
+    <section class="public-section">
+        <h2>¿Por qué es importante registrar nuestras transacciones?</h2>
+        <p>
+            Un sistema financiero nos permite llevar un control exacto de ingresos, gastos,
+            activos y pasivos. Esto facilita la toma de decisiones, el cumplimiento de obligaciones
+            fiscales y la generación de informes confiables para gerentes, contadores y auditores.
+        </p>
+        <p>
+            Además, al contar con un catálogo de cuentas bien estructurado y un diario general,
+            se puede garantizar que cada movimiento quede respaldado y sea trazable.
+        </p>
+    </section>
 </body>
 </html>

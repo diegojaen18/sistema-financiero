@@ -1,39 +1,22 @@
 <?php
-/**
- * Navigation Layout
- * Sistema Financiero - UTP
- */
+// views/layouts/nav.php
 
-// Detectar página actual
-$currentPage = basename($_SERVER['PHP_SELF']);
+use App\Security\SessionManager;
+
+$full_name = SessionManager::get('full_name');
 ?>
-
-<nav class="nav">
-    <ul class="nav-list">
-        <li>
-            <a href="dashboard.php" class="<?= $currentPage === 'dashboard.php' ? 'active' : '' ?>">
-                🏠 Dashboard
-            </a>
-        </li>
-        <li>
-            <a href="users.php" class="<?= $currentPage === 'users.php' ? 'active' : '' ?>">
-                👥 Usuarios
-            </a>
-        </li>
-        <li>
-            <a href="accounts.php" class="<?= $currentPage === 'accounts.php' ? 'active' : '' ?>">
-                📊 Catálogo de Cuentas
-            </a>
-        </li>
-        <li>
-            <a href="transactions.php" class="<?= $currentPage === 'transactions.php' ? 'active' : '' ?>">
-                💰 Transacciones
-            </a>
-        </li>
-        <li>
-            <a href="reports.php" class="<?= $currentPage === 'reports.php' ? 'active' : '' ?>">
-                📈 Reportes
-            </a>
-        </li>
-    </ul>
+<nav class="top-nav">
+    <div>
+        <span class="brand"><?= APP_NAME ?></span>
+    </div>
+    <div class="nav-right">
+        <?php if ($full_name): ?>
+            <span class="user-info">Hola, <?= htmlspecialchars($full_name) ?></span>
+        <?php endif; ?>
+        <a href="<?= BASE_URL ?>/dashboard.php" class="nav-link">Dashboard</a>
+        <a href="<?= BASE_URL ?>/users.php" class="nav-link">Usuarios</a>
+        <a href="<?= BASE_URL ?>/accounts.php" class="nav-link">Cuentas</a>
+        <!-- luego: Transacciones, Reportes, etc. -->
+        <a href="<?= BASE_URL ?>/logout.php" class="btn btn-secondary">Cerrar sesión</a>
+    </div>
 </nav>

@@ -1,10 +1,23 @@
 <?php
-namespace src\Security;
+// src/Security/Sanitizer.php
 
-use src\Interfaces\ValidatorInterface;
+namespace App\Security;
 
-class Sanitizer {
-    public function cleanString(string $input): string {
-        return trim(htmlspecialchars($input, ENT_QUOTES, 'UTF-8'));
+class Sanitizer
+{
+    public static function cleanString(?string $value): string
+    {
+        return htmlspecialchars(trim((string) $value), ENT_QUOTES, 'UTF-8');
+    }
+
+    public static function cleanArray(array $data): array
+    {
+        $clean = [];
+        foreach ($data as $key => $value) {
+            $clean[$key] = is_string($value)
+                ? self::cleanString($value)
+                : $value;
+        }
+        return $clean;
     }
 }

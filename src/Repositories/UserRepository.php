@@ -1,70 +1,120 @@
 <?php
-namespace SistemaFinanciero\Repositories;
+// src/Repositories/UserRepository.php
 
-class UserRepository extends BaseRepository {
-    
-    protected string $table = 'users';
-    
-    public function findByUsername(string $username): ?array {
-        $sql = "SELECT u.*, GROUP_CONCAT(r.name) as roles
-                FROM users u
-                LEFT JOIN user_roles ur ON u.id = ur.user_id
-                LEFT JOIN roles r ON ur.role_id = r.id
-                WHERE u.username = ?
-                GROUP BY u.id";
-        
-        return $this->db->queryOne($sql, [$username]);
+namespace App\Repositories;
+
+use App\Database\Connection;
+use PDO;
+
+class UserRepository
+{
+    private PDO $db;
+
+    public function __construct()
+    {
+        $this->db = Connection::getInstance();
     }
-    
-    public function findByEmail(string $email): ?array {
-        $sql = "SELECT * FROM {$this->table} WHERE email = ?";
-        return $this->db->queryOne($sql, [$email]);
+
+    public function findByUsername(string $username): ?array
+    {
+        $sql  = "SELECT * FROM users WHERE username = :username AND is_active = 1 LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['username' => $username]);
+        $user = $stmt->fetch();
+
+        return $user ?: null;
     }
-    
-    public function findActive(): array {
-        $sql = "SELECT * FROM {$this->table} WHERE is_active = 1 ORDER BY full_name";
-        return $this->db->query($sql);
+
+    public function updateLastLogin(int $userId): void
+    {
+        $sql  = "UPDATE users SET last_login = NOW() WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $userId]);
     }
-    
-    public function usernameExists(string $username, ?int $exceptId = null): bool {
-        $sql = "SELECT COUNT(*) FROM {$this->table} WHERE username = ?";
-        $params = [$username];
-        
-        if ($exceptId) {
-            $sql .= " AND id != ?";
-            $params[] = $exceptId;
+
+    /* === NUEVO: CRUD BÁSICO === */
+
+    public function findAll(): array
+    {
+        $sql = "SELECT id, username, full_name, email, is_active, created_at 
+                FROM users
+                ORDER BY id ASC";
+        return $this->db->query($sql)->fetchAll();
+    }
+
+    public function findById(int $id): ?array
+    {
+        $sql  = "SELECT * FROM users WHERE id = :id LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        $user = $stmt->fetch();
+
+        return $user ?: null;
+    }
+
+    public function create(array $data): bool
+    {
+        $sql = "INSERT INTO users (username, password_hash, full_name, email, is_active, created_by)
+                VALUES (:username, :password_hash, :full_name, :email, :is_active, :created_by)";
+
+        $stmt = $this->db->prepare($sql);
+
+        $passwordHash = password_hash($data['password'], PASSWORD_BCRYPT);
+
+        try {
+            return $stmt->execute([
+                'username'      => $data['username'],
+                'password_hash' => $passwordHash,
+                'full_name'     => $data['full_name'],
+                'email'         => $data['email'],
+                'is_active'     => $data['is_active'] ?? 1,
+                'created_by'    => $data['created_by'] ?? null,
+            ]);
+        } catch (\PDOException $e) {
+            // Aquí podrías loguear el error si quieres
+            return false;
         }
-        
-        return $this->db->queryScalar($sql, $params) > 0;
     }
-    
-    public function emailExists(string $email, ?int $exceptId = null): bool {
-        $sql = "SELECT COUNT(*) FROM {$this->table} WHERE email = ?";
-        $params = [$email];
-        
-        if ($exceptId) {
-            $sql .= " AND id != ?";
-            $params[] = $exceptId;
+
+    public function update(int $id, array $data): bool
+    {
+        $params = [
+            'username'  => $data['username'],
+            'full_name' => $data['full_name'],
+            'email'     => $data['email'],
+            'is_active' => $data['is_active'] ?? 1,
+            'id'        => $id,
+        ];
+
+        $sql = "UPDATE users 
+                SET username = :username,
+                    full_name = :full_name,
+                    email = :email,
+                    is_active = :is_active";
+
+        if (!empty($data['password'])) {
+            $sql .= ", password_hash = :password_hash";
+            $params['password_hash'] = password_hash($data['password'], PASSWORD_BCRYPT);
         }
-        
-        return $this->db->queryScalar($sql, $params) > 0;
+
+        $sql .= " WHERE id = :id";
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute($params);
+        } catch (\PDOException $e) {
+            return false;
+        }
     }
-    
-    public function softDelete(int $id): bool {
-        return $this->update($id, ['is_active' => 0]);
-    }
-    
-    public function hasActivity(int $userId): bool {
-        $sql = "SELECT COUNT(*) FROM transactions WHERE created_by = ?";
-        if ($this->db->queryScalar($sql, [$userId]) > 0) {
-            return true;
-        }
-        
-        $sql = "SELECT COUNT(*) FROM accounts WHERE created_by = ?";
-        if ($this->db->queryScalar($sql, [$userId]) > 0) {
-            return true;
-        }
-        
-        return false;
+
+    // NO eliminamos físicamente usuarios: solo activamos/desactivamos
+    public function setActive(int $id, bool $isActive): bool
+    {
+        $sql  = "UPDATE users SET is_active = :active WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'active' => $isActive ? 1 : 0,
+            'id'     => $id,
+        ]);
     }
 }

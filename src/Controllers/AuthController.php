@@ -1,28 +1,44 @@
 <?php
-namespace src\Controllers;
+// src/Controllers/AuthController.php
 
-use src\Services\AuthService;
+namespace App\Controllers;
 
-class AuthController {
-    private AuthService $auth;
+use App\Services\AuthService;
+use App\Security\SessionManager;
 
-    public function __construct() {
-        session_start();
-        $this->auth = new AuthService();
+class AuthController
+{
+    private AuthService $authService;
+
+    public function __construct()
+    {
+        $this->authService = new AuthService();
     }
 
-    public function attemptLogin() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $result = $this->auth->login($_POST['username'], $_POST['password']);
+    public function showLogin(?array $errors = null): void
+    {
+        $errors = $errors ?? [];
+        // Variable disponible para la vista
+        $pageTitle = 'Login - ' . APP_NAME;
+        include BASE_PATH . '/views/auth/login.php';
+    }
 
-            if ($result['success']) {
-                header("Location: dashboard.php");
-                exit();
-            }
+    public function handleLogin(): void
+    {
+        $result = $this->authService->login($_POST);
 
-            $_SESSION['login_error'] = $result['errors'][0] ?? $result['message'];
-            header("Location: login.php");
-            exit();
+        if ($result['success']) {
+            header('Location: dashboard.php');
+            exit;
         }
+
+        $this->showLogin($result['errors']);
+    }
+
+    public function logout(): void
+    {
+        $this->authService->logout();
+        header('Location: login.php');
+        exit;
     }
 }

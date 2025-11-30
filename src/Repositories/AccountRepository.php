@@ -1,66 +1,99 @@
 <?php
-namespace SistemaFinanciero\Repositories;
+// src/Repositories/AccountRepository.php
 
-class AccountRepository extends BaseRepository {
-    
-    protected string $table = 'accounts';
-    
-    public function findByCode(string $code): ?array {
-        $sql = "SELECT * FROM {$this->table} WHERE code = ?";
-        return $this->db->queryOne($sql, [$code]);
+namespace App\Repositories;
+
+use App\Database\Connection;
+use PDO;
+
+class AccountRepository
+{
+    private PDO $db;
+
+    public function __construct()
+    {
+        $this->db = Connection::getInstance();
     }
-    
-    public function findByClass(int $class): array {
-        $sql = "SELECT * FROM {$this->table} 
-                WHERE account_class = ? AND is_active = 1 
-                ORDER BY code";
-        return $this->db->query($sql, [$class]);
-    }
-    
-    public function findActive(): array {
-        $sql = "SELECT a.*, u.full_name as created_by_name
-                FROM {$this->table} a
-                INNER JOIN users u ON a.created_by = u.id
-                WHERE a.is_active = 1
-                ORDER BY a.code";
-        return $this->db->query($sql);
-    }
-    
-    public function codeExists(string $code, ?int $exceptId = null): bool {
-        $sql = "SELECT COUNT(*) FROM {$this->table} WHERE code = ?";
-        $params = [$code];
-        
-        if ($exceptId) {
-            $sql .= " AND id != ?";
-            $params[] = $exceptId;
-        }
-        
-        return $this->db->queryScalar($sql, $params) > 0;
-    }
-    
-    public function getBalancesByClass(int $class, string $startDate, string $endDate): array {
-        $sql = "SELECT 
-                    a.id,
-                    a.code,
-                    a.name,
-                    a.account_type,
-                    COALESCE(SUM(
-                        CASE 
-                            WHEN a.account_type = 'debit' THEN tl.debit - tl.credit
-                            ELSE tl.credit - tl.debit
-                        END
-                    ), 0) as balance
+
+    public function findAll(): array
+    {
+        $sql = "SELECT a.*, u.username AS created_by_username
                 FROM accounts a
-                LEFT JOIN transaction_lines tl ON a.id = tl.account_id
-                LEFT JOIN transactions t ON tl.transaction_id = t.id
-                WHERE a.account_class = ?
-                  AND a.is_active = 1
-                  AND (t.transaction_date BETWEEN ? AND ? OR t.id IS NULL)
-                  AND (t.is_posted = 1 OR t.id IS NULL)
-                GROUP BY a.id, a.code, a.name, a.account_type
-                HAVING balance != 0
-                ORDER BY a.code";
-        
-        return $this->db->query($sql, [$class, $startDate, $endDate]);
+                LEFT JOIN users u ON u.id = a.created_by
+                ORDER BY a.code ASC";
+        return $this->db->query($sql)->fetchAll();
+    }
+
+    public function findById(int $id): ?array
+    {
+        $sql  = "SELECT a.*, u.username AS created_by_username
+                 FROM accounts a
+                 LEFT JOIN users u ON u.id = a.created_by
+                 WHERE a.id = :id
+                 LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        $account = $stmt->fetch();
+
+        return $account ?: null;
+    }
+
+    public function create(array $data): bool
+    {
+        $sql = "INSERT INTO accounts 
+                    (code, name, account_class, account_type, is_active, created_by)
+                VALUES 
+                    (:code, :name, :account_class, :account_type, :is_active, :created_by)";
+
+        $stmt = $this->db->prepare($sql);
+
+        try {
+            return $stmt->execute([
+                'code'          => $data['code'],
+                'name'          => $data['name'],
+                'account_class' => $data['account_class'],
+                'account_type'  => $data['account_type'],
+                'is_active'     => $data['is_active'] ?? 1,
+                'created_by'    => $data['created_by'] ?? null,
+            ]);
+        } catch (\PDOException $e) {
+            return false;
+        }
+    }
+
+    public function update(int $id, array $data): bool
+    {
+        $sql = "UPDATE accounts
+                SET code = :code,
+                    name = :name,
+                    account_class = :account_class,
+                    account_type = :account_type,
+                    is_active = :is_active
+                WHERE id = :id";
+
+        $stmt = $this->db->prepare($sql);
+
+        try {
+            return $stmt->execute([
+                'code'          => $data['code'],
+                'name'          => $data['name'],
+                'account_class' => $data['account_class'],
+                'account_type'  => $data['account_type'],
+                'is_active'     => $data['is_active'] ?? 1,
+                'id'            => $id,
+            ]);
+        } catch (\PDOException $e) {
+            return false;
+        }
+    }
+
+    public function setActive(int $id, bool $isActive): bool
+    {
+        $sql  = "UPDATE accounts SET is_active = :active WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'active' => $isActive ? 1 : 0,
+            'id'     => $id,
+        ]);
     }
 }
