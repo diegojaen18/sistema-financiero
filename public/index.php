@@ -1,32 +1,63 @@
 <?php
 // public/index.php
-require_once __DIR__ . '/../config/constants.php';
-?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Bienvenido - <?= APP_NAME ?></title>
-    <link rel="stylesheet" href="assets/css/style.css">
-</head>
-<body class="public-body">
-    <header class="public-header">
-        <h1><?= APP_NAME ?></h1>
-        <p>Sistema para registrar y controlar las transacciones financieras de una empresa.</p>
-        <a href="login.php" class="btn btn-primary">Entrar al sistema</a>
-    </header>
 
-    <section class="public-section">
-        <h2>¿Por qué es importante registrar nuestras transacciones?</h2>
+require_once __DIR__ . '/../config/constants.php';
+require_once BASE_PATH . '/config/database.php';
+require_once BASE_PATH . '/config/security.php';
+
+require_once BASE_PATH . '/src/Security/SessionManager.php';
+
+use App\Security\SessionManager;
+
+$pageTitle = 'Sistema Financiero - Página pública';
+
+include BASE_PATH . '/views/layouts/header.php';
+?>
+
+<section class="dashboard-hero">
+    <div>
+        <h1>Sistema Financiero Contable</h1>
         <p>
-            Un sistema financiero nos permite llevar un control exacto de ingresos, gastos,
-            activos y pasivos. Esto facilita la toma de decisiones, el cumplimiento de obligaciones
-            fiscales y la generación de informes confiables para gerentes, contadores y auditores.
+            Este sistema permite registrar, controlar y analizar las transacciones 
+            financieras de una organización de forma estructurada.
         </p>
-        <p>
-            Además, al contar con un catálogo de cuentas bien estructurado y un diario general,
-            se puede garantizar que cada movimiento quede respaldado y sea trazable.
+        <p class="dashboard-subtitle">
+            Al registrar todas las operaciones en un Diario General y generar informes
+            como el Estado de Resultados y el Balance General, es posible tomar mejores
+            decisiones, cumplir con obligaciones legales y mantener la información 
+            financiera confiable.
         </p>
-    </section>
-</body>
-</html>
+        <div class="mt-2">
+            <a href="<?= BASE_URL ?>/login.php" class="btn btn-primary">Iniciar sesión</a>
+        </div>
+        <p class="small-note mt-2">
+            Solo usuarios autorizados pueden acceder al panel. Si no tienes acceso,
+            contacta al administrador del sistema.
+        </p>
+    </div>
+</section>
+
+<section class="dashboard-grid">
+    <div class="dashboard-card">
+        <div class="dashboard-card-icon">🧾</div>
+        <h2>Registro estructurado</h2>
+        <p>Las transacciones se almacenan en un Diario General con partida doble, garantizando la consistencia contable.</p>
+    </div>
+    <div class="dashboard-card">
+        <div class="dashboard-card-icon">📚</div>
+        <h2>Catálogo de cuentas</h2>
+        <p>Las cuentas se clasifican por Activos, Pasivos, Patrimonio, Ingresos y Gastos según la estructura contable.</p>
+    </div>
+    <div class="dashboard-card">
+        <div class="dashboard-card-icon">📊</div>
+        <h2>Informes financieros</h2>
+        <p>El sistema genera automáticamente Estado de Resultados y Balance General a partir de los registros.</p>
+    </div>
+    <div class="dashboard-card">
+        <div class="dashboard-card-icon">✅</div>
+        <h2>Control y trazabilidad</h2>
+        <p>Cada operación registra el usuario que la creó, los roles asignados y las firmas de los informes.</p>
+    </div>
+</section>
+
+<?php include BASE_PATH . '/views/layouts/footer.php'; ?>

@@ -3,7 +3,7 @@
 
 require_once __DIR__ . '/../config/constants.php';
 require_once BASE_PATH . '/config/database.php';
-
+require_once BASE_PATH . '/config/security.php';
 // Autoload sencillo con requires (sin Composer)
 require_once BASE_PATH . '/src/Database/Connection.php';
 require_once BASE_PATH . '/src/Interfaces/ValidatorInterface.php';

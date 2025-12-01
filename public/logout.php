@@ -3,7 +3,7 @@
 
 require_once __DIR__ . '/../config/constants.php';
 require_once BASE_PATH . '/config/database.php';
-
+require_once BASE_PATH . '/config/security.php';
 // Misma lista de requires que en login.php, para que carguen TODAS las clases necesarias
 require_once BASE_PATH . '/src/Database/Connection.php';
 

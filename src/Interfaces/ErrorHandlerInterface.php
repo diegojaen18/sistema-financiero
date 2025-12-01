@@ -1,6 +1,16 @@
 <?php
-namespace SistemaFinanciero\Interfaces;
+// src/Interfaces/ErrorHandlerInterface.php
 
-interface ErrorHandlerInterface {
-    public static function handle(\Throwable $error, string $context = ""): void;
+namespace App\Interfaces;
+
+interface ErrorHandlerInterface
+{
+    public function handleException(\Throwable $e): void;
+
+    public function handleError(
+        int $errno,
+        string $errstr,
+        ?string $errfile = null,
+        ?int $errline = null
+    ): bool;
 }

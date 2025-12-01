@@ -11,7 +11,7 @@ require_once BASE_PATH . '/src/Interfaces/ValidatorInterface.php';
 require_once BASE_PATH . '/src/Security/Validator.php';
 require_once BASE_PATH . '/src/Security/Sanitizer.php';
 require_once BASE_PATH . '/src/Security/SessionManager.php';
-
+require_once BASE_PATH . '/config/security.php';
 require_once BASE_PATH . '/src/Repositories/AccountRepository.php';
 require_once BASE_PATH . '/src/Controllers/AccountController.php';
 

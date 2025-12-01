@@ -1,22 +1,18 @@
 <?php
-/**
- * Configuración de Seguridad
- * Sistema Financiero - UTP
- */
+// config/security.php
 
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', 0);
-ini_set('session.use_strict_mode', 1);
-ini_set('session.cookie_samesite', 'Strict');
+use App\Utils\ErrorHandler;
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once BASE_PATH . '/src/Interfaces/ErrorHandlerInterface.php';
+require_once BASE_PATH . '/src/Utils/Logger.php';
+require_once BASE_PATH . '/src/Utils/ErrorHandler.php';
 
-header('X-Frame-Options: DENY');
+// Registrar manejadores globales de errores y excepciones
+$__appErrorHandler = new ErrorHandler();
+set_error_handler([$__appErrorHandler, 'handleError']);
+set_exception_handler([$__appErrorHandler, 'handleException']);
+
+// Cabeceras básicas de seguridad
+header('X-Frame-Options: SAMEORIGIN');
 header('X-Content-Type-Options: nosniff');
 header('X-XSS-Protection: 1; mode=block');
-header('Referrer-Policy: strict-origin-when-cross-origin');
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-header('Pragma: no-cache');

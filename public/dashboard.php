@@ -3,7 +3,7 @@
 
 require_once __DIR__ . '/../config/constants.php';
 require_once BASE_PATH . '/config/database.php';
-
+require_once BASE_PATH . '/config/security.php';
 require_once BASE_PATH . '/src/Security/SessionManager.php';
 
 use App\Security\SessionManager;

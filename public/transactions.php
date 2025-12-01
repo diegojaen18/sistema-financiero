@@ -7,7 +7,7 @@ require_once BASE_PATH . '/config/database.php';
 require_once BASE_PATH . '/src/Database/Connection.php';
 
 require_once BASE_PATH . '/src/Interfaces/ValidatorInterface.php';
-
+require_once BASE_PATH . '/config/security.php';
 require_once BASE_PATH . '/src/Security/Validator.php';
 require_once BASE_PATH . '/src/Security/Sanitizer.php';
 require_once BASE_PATH . '/src/Security/SessionManager.php';

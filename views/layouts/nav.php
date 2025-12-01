@@ -3,6 +3,7 @@
 
 use App\Security\SessionManager;
 
+$userId    = SessionManager::get('user_id');
 $full_name = SessionManager::get('full_name');
 ?>
 <nav class="top-nav">
@@ -10,14 +11,19 @@ $full_name = SessionManager::get('full_name');
         <span class="brand"><?= APP_NAME ?></span>
     </div>
     <div class="nav-right">
-        <?php if ($full_name): ?>
-            <span class="user-info">Hola, <?= htmlspecialchars($full_name) ?></span>
+        <?php if ($userId): ?>
+            <?php if ($full_name): ?>
+                <span class="user-info">Hola, <?= htmlspecialchars($full_name) ?></span>
+            <?php endif; ?>
+            <a href="<?= BASE_URL ?>/dashboard.php" class="nav-link">Dashboard</a>
+            <a href="<?= BASE_URL ?>/users.php" class="nav-link">Usuarios</a>
+            <a href="<?= BASE_URL ?>/accounts.php" class="nav-link">Cuentas</a>
+            <a href="<?= BASE_URL ?>/transactions.php" class="nav-link">Transacciones</a>
+            <a href="<?= BASE_URL ?>/reports.php" class="nav-link">Informes</a>
+            <a href="<?= BASE_URL ?>/roles.php" class="nav-link">Roles</a>
+            <a href="<?= BASE_URL ?>/logout.php" class="btn btn-secondary btn-small">Cerrar sesión</a>
+        <?php else: ?>
+            <a href="<?= BASE_URL ?>/login.php" class="btn btn-primary btn-small">Iniciar sesión</a>
         <?php endif; ?>
-        <a href="<?= BASE_URL ?>/dashboard.php" class="nav-link">Dashboard</a>
-        <a href="<?= BASE_URL ?>/users.php" class="nav-link">Usuarios</a>
-        <a href="<?= BASE_URL ?>/accounts.php" class="nav-link">Cuentas</a>
-        <a href="<?= BASE_URL ?>/transactions.php" class="nav-link">Transacciones</a>
-        <a href="<?= BASE_URL ?>/reports.php" class="nav-link">Informes</a>
-        <a href="<?= BASE_URL ?>/logout.php" class="btn btn-secondary btn-small">Cerrar sesión</a>
     </div>
 </nav>

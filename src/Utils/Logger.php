@@ -1,37 +1,44 @@
 <?php
-namespace SistemaFinanciero\Utils;
+// src/Utils/Logger.php
 
-class Logger {
-    
-    public static function info(string $message, array $context = []): void {
-        self::write('INFO', $message, $context);
+namespace App\Utils;
+
+class Logger
+{
+    private string $logFile;
+
+    public function __construct(?string $filePath = null)
+    {
+        // /src/Utils -> /src -> / (proyecto)
+        $this->logFile = $filePath ?: (dirname(__DIR__, 2) . '/storage/logs/app.log');
     }
-    
-    public static function error(string $message, array $context = []): void {
-        self::write('ERROR', $message, $context);
+
+    public function info(string $message, array $context = []): void
+    {
+        $this->write('INFO', $message, $context);
     }
-    
-    public static function warning(string $message, array $context = []): void {
-        self::write('WARNING', $message, $context);
+
+    public function error(string $message, array $context = []): void
+    {
+        $this->write('ERROR', $message, $context);
     }
-    
-    public static function debug(string $message, array $context = []): void {
-        if (APP_ENV === 'development') {
-            self::write('DEBUG', $message, $context);
-        }
-    }
-    
-    private static function write(string $level, string $message, array $context): void {
-        $logFile = LOGS_PATH . '/app-' . date('Y-m-d') . '.log';
-        
-        $logEntry = sprintf(
+
+    private function write(string $level, string $message, array $context = []): void
+    {
+        $date = date('Y-m-d H:i:s');
+        $line = sprintf(
             "[%s] [%s] %s %s\n",
-            date('Y-m-d H:i:s'),
+            $date,
             $level,
             $message,
-            !empty($context) ? json_encode($context) : ''
+            $context ? json_encode($context, JSON_UNESCAPED_UNICODE) : ''
         );
-        
-        @file_put_contents($logFile, $logEntry, FILE_APPEND);
+
+        $dir = dirname($this->logFile);
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0777, true);
+        }
+
+        @file_put_contents($this->logFile, $line, FILE_APPEND);
     }
 }
