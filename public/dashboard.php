@@ -13,18 +13,43 @@ SessionManager::requireLogin();
 $full_name = SessionManager::get('full_name');
 $pageTitle = 'Dashboard - ' . APP_NAME;
 
-require_once BASE_PATH . '/src/Security/SessionManager.php';
-require_once BASE_PATH . '/views/layouts/header.php';
+include BASE_PATH . '/views/layouts/header.php';
 ?>
 
-<h1>Panel principal</h1>
-<p>Bienvenido, <?= htmlspecialchars($full_name) ?>.</p>
+<section class="dashboard-hero">
+    <div>
+        <h1>Panel principal</h1>
+        <p>Bienvenido, <?= htmlspecialchars($full_name) ?>.</p>
+        <p class="dashboard-subtitle">
+            Desde aquí puedes gestionar usuarios, cuentas contables, transacciones e informes financieros.
+        </p>
+    </div>
+</section>
 
-<ul>
-    <li><a href="<?= BASE_URL ?>/users.php">Módulo de Usuarios</a></li>
-    <li><a href="<?= BASE_URL ?>/accounts.php">Catálogo de Cuentas</a></li>
-    <li><a href="<?= BASE_URL ?>/transactions.php">Transacciones (Diario General)</a></li>
-    <li><a href="<?= BASE_URL ?>/reports.php">Informes Financieros</a></li>
-</ul>
+<section class="dashboard-grid">
+    <a href="<?= BASE_URL ?>/users.php" class="dashboard-card">
+        <div class="dashboard-card-icon">👥</div>
+        <h2>Usuarios</h2>
+        <p>Administra los usuarios del sistema y sus accesos.</p>
+    </a>
+
+    <a href="<?= BASE_URL ?>/accounts.php" class="dashboard-card">
+        <div class="dashboard-card-icon">📚</div>
+        <h2>Catálogo de Cuentas</h2>
+        <p>Configura las cuentas contables utilizadas en el sistema.</p>
+    </a>
+
+    <a href="<?= BASE_URL ?>/transactions.php" class="dashboard-card">
+        <div class="dashboard-card-icon">🧾</div>
+        <h2>Transacciones</h2>
+        <p>Registra las operaciones del Diario General con partida doble.</p>
+    </a>
+
+    <a href="<?= BASE_URL ?>/reports.php" class="dashboard-card">
+        <div class="dashboard-card-icon">📊</div>
+        <h2>Informes Financieros</h2>
+        <p>Genera estado de resultados y balance general del período.</p>
+    </a>
+</section>
 
 <?php include BASE_PATH . '/views/layouts/footer.php'; ?>

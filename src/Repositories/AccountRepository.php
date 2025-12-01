@@ -96,4 +96,11 @@ class AccountRepository
             'id'     => $id,
         ]);
     }
+
+    public function findActive(): array
+    {
+        $sql = "SELECT * FROM accounts WHERE is_active = 1 ORDER BY code ASC";
+        return $this->db->query($sql)->fetchAll();
+    }
+
 }

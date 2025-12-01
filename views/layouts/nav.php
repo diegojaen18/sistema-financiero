@@ -6,7 +6,7 @@ use App\Security\SessionManager;
 $full_name = SessionManager::get('full_name');
 ?>
 <nav class="top-nav">
-    <div>
+    <div class="nav-left">
         <span class="brand"><?= APP_NAME ?></span>
     </div>
     <div class="nav-right">
@@ -16,7 +16,8 @@ $full_name = SessionManager::get('full_name');
         <a href="<?= BASE_URL ?>/dashboard.php" class="nav-link">Dashboard</a>
         <a href="<?= BASE_URL ?>/users.php" class="nav-link">Usuarios</a>
         <a href="<?= BASE_URL ?>/accounts.php" class="nav-link">Cuentas</a>
-        <!-- luego: Transacciones, Reportes, etc. -->
-        <a href="<?= BASE_URL ?>/logout.php" class="btn btn-secondary">Cerrar sesión</a>
+        <a href="<?= BASE_URL ?>/transactions.php" class="nav-link">Transacciones</a>
+        <a href="<?= BASE_URL ?>/reports.php" class="nav-link">Informes</a>
+        <a href="<?= BASE_URL ?>/logout.php" class="btn btn-secondary btn-small">Cerrar sesión</a>
     </div>
 </nav>

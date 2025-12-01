@@ -1,84 +1,131 @@
 <?php
-namespace SistemaFinanciero\Repositories;
+// src/Repositories/TransactionRepository.php
 
-class TransactionRepository extends BaseRepository {
-    
-    protected string $table = 'transactions';
-    
-    public function findWithLines(int $id): ?array {
-        $transaction = $this->find($id);
-        
-        if ($transaction) {
-            $transaction['lines'] = $this->getLines($id);
-        }
-        
-        return $transaction;
+namespace App\Repositories;
+
+use App\Database\Connection;
+use PDO;
+
+class TransactionRepository
+{
+    private PDO $db;
+
+    public function __construct()
+    {
+        $this->db = Connection::getInstance();
     }
-    
-    public function getLines(int $transactionId): array {
-        $sql = "SELECT tl.*, a.code as account_code, a.name as account_name
-                FROM transaction_lines tl
-                INNER JOIN accounts a ON tl.account_id = a.id
-                WHERE tl.transaction_id = ?
-                ORDER BY tl.id";
-        
-        return $this->db->query($sql, [$transactionId]);
-    }
-    
-    public function saveWithLines(array $transactionData, array $lines): int {
-        $this->db->beginTransaction();
-        
-        try {
-            $transactionId = $this->save($transactionData);
-            
-            foreach ($lines as $line) {
-                $line['transaction_id'] = $transactionId;
-                $this->saveLine($line);
-            }
-            
-            $this->db->commit();
-            return $transactionId;
-            
-        } catch (\Exception $e) {
-            $this->db->rollBack();
-            throw $e;
-        }
-    }
-    
-    public function saveLine(array $lineData): int {
-        $sql = "INSERT INTO transaction_lines (transaction_id, account_id, debit, credit, memo)
-                VALUES (?, ?, ?, ?, ?)";
-        
-        $this->db->execute($sql, [
-            $lineData['transaction_id'],
-            $lineData['account_id'],
-            $lineData['debit'] ?? 0,
-            $lineData['credit'] ?? 0,
-            $lineData['memo'] ?? ''
-        ]);
-        
-        return (int)$this->db->lastInsertId();
-    }
-    
-    public function findByDateRange(string $startDate, string $endDate): array {
-        $sql = "SELECT t.*, u.full_name as created_by_name,
-                (SELECT SUM(debit) FROM transaction_lines WHERE transaction_id = t.id) as total_debit,
-                (SELECT SUM(credit) FROM transaction_lines WHERE transaction_id = t.id) as total_credit
-                FROM {$this->table} t
-                INNER JOIN users u ON t.created_by = u.id
-                WHERE t.transaction_date BETWEEN ? AND ?
+
+    public function findAll(): array
+    {
+        $sql = "SELECT 
+                    t.*,
+                    u.username AS created_by_username,
+                    COALESCE(SUM(tl.debit), 0)  AS total_debit,
+                    COALESCE(SUM(tl.credit), 0) AS total_credit
+                FROM transactions t
+                LEFT JOIN users u ON u.id = t.created_by
+                LEFT JOIN transaction_lines tl ON tl.transaction_id = t.id
+                GROUP BY t.id
                 ORDER BY t.transaction_date DESC, t.id DESC";
-        
-        return $this->db->query($sql, [$startDate, $endDate]);
+
+        return $this->db->query($sql)->fetchAll();
     }
-    
-    public function findPosted(): array {
-        $sql = "SELECT t.*, u.full_name as created_by_name
-                FROM {$this->table} t
-                INNER JOIN users u ON t.created_by = u.id
-                WHERE t.is_posted = 1
-                ORDER BY t.transaction_date DESC";
-        
-        return $this->db->query($sql);
+
+    public function findById(int $id): ?array
+    {
+        $sql = "SELECT 
+                    t.*,
+                    u.username AS created_by_username
+                FROM transactions t
+                LEFT JOIN users u ON u.id = t.created_by
+                WHERE t.id = :id
+                LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        $tx = $stmt->fetch();
+
+        return $tx ?: null;
+    }
+
+    public function findLinesByTransactionId(int $transactionId): array
+    {
+        $sql = "SELECT 
+                    tl.*,
+                    a.code,
+                    a.name,
+                    a.account_type
+                FROM transaction_lines tl
+                INNER JOIN accounts a ON a.id = tl.account_id
+                WHERE tl.transaction_id = :id
+                ORDER BY tl.id ASC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $transactionId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Crea una transacción y sus líneas (partida doble).
+     * $txData: ['transaction_date', 'description', 'is_posted', 'created_by']
+     * $lines: cada línea = ['account_id', 'debit', 'credit', 'memo']
+     */
+    public function createWithLines(array $txData, array $lines): bool
+    {
+        try {
+            $this->db->beginTransaction();
+
+            $sqlTx = "INSERT INTO transactions (transaction_date, description, is_posted, created_by)
+                      VALUES (:transaction_date, :description, :is_posted, :created_by)";
+
+            $stmtTx = $this->db->prepare($sqlTx);
+            $stmtTx->execute([
+                'transaction_date' => $txData['transaction_date'],
+                'description'      => $txData['description'],
+                'is_posted'        => $txData['is_posted'] ? 1 : 0,
+                'created_by'       => $txData['created_by'],
+            ]);
+
+            $txId = (int) $this->db->lastInsertId();
+
+            $sqlLine = "INSERT INTO transaction_lines (transaction_id, account_id, debit, credit, memo)
+                        VALUES (:transaction_id, :account_id, :debit, :credit, :memo)";
+            $stmtLine = $this->db->prepare($sqlLine);
+
+            foreach ($lines as $line) {
+                $stmtLine->execute([
+                    'transaction_id' => $txId,
+                    'account_id'     => $line['account_id'],
+                    'debit'          => $line['debit'],
+                    'credit'         => $line['credit'],
+                    'memo'           => $line['memo'] ?? null,
+                ]);
+            }
+
+            $this->db->commit();
+            return true;
+        } catch (\PDOException $e) {
+            $this->db->rollBack();
+            return false;
+        }
+    }
+
+    /**
+     * Solo permite borrar si la transacción NO está posteada.
+     */
+    public function deleteIfNotPosted(int $id): bool
+    {
+        $tx = $this->findById($id);
+        if (!$tx || $tx['is_posted']) {
+            return false;
+        }
+
+        $sqlLines = "DELETE FROM transaction_lines WHERE transaction_id = :id";
+        $stmt     = $this->db->prepare($sqlLines);
+        $stmt->execute(['id' => $id]);
+
+        $sqlTx = "DELETE FROM transactions WHERE id = :id";
+        $stmt  = $this->db->prepare($sqlTx);
+        return $stmt->execute(['id' => $id]);
     }
 }
