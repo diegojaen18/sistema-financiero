@@ -164,5 +164,5 @@ Este script:
 ### 2. Clonar el repositorio
 
 ```bash
-git clone https://github.com/USUARIO/sistema-financiero.git
+git clone https://github.com/diegojaen18/sistema-financiero.git
 cd sistema-financiero
