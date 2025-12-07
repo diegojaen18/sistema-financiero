@@ -1,4 +1,5 @@
-# Sistema Financiero Contable – Ingeniería Web
+# Sistema Financiero Contable – Ingeniería Web - Grupo 1SF132
+Carlos Delgado, Diego Jaen, Mauricio Parra, Edwin Zhong
 
 Proyecto académico desarrollado para la asignatura **Ingeniería Web** de la Universidad Tecnológica de Panamá.  
 El objetivo del sistema es permitir a una organización **registrar sus transacciones contables**, mantener un **catálogo de cuentas** y generar automáticamente **informes financieros** (Estado de Resultados y Balance General), con control de usuarios y firmas de informes.
