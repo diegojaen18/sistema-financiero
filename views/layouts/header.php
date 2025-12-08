@@ -15,3 +15,4 @@ SessionManager::start();
 <body class="dashboard-body">
 <?php include BASE_PATH . '/views/layouts/nav.php'; ?>
 <main class="dashboard-main">
+
