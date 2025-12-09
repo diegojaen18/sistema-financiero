@@ -75,5 +75,11 @@ $today = date('Y-m-d');
         </p>
     </div>
 <?php endif; ?>
+<?php if (!empty($reportGenerated)): ?>
+    <script>
+        alert('Informe de Balance General generado correctamente.');
+    </script>
+<?php endif; ?>
+
 
 <?php include BASE_PATH . '/views/layouts/footer.php'; ?>

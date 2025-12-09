@@ -117,4 +117,31 @@ class UserRepository
             'id'     => $id,
         ]);
     }
+
+    public function search(string $search = ''): array
+    {
+        $search = trim($search);
+
+        if ($search === '') {
+            // comportamiento por defecto
+            return $this->findAll();
+        }
+
+        $sql = "
+            SELECT *
+            FROM users
+            WHERE username  LIKE :term
+            OR full_name LIKE :term
+            OR email     LIKE :term
+            ORDER BY id DESC
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $like = '%' . $search . '%';
+        $stmt->bindValue(':term', $like, \PDO::PARAM_STR);
+        $stmt->execute();
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
 }

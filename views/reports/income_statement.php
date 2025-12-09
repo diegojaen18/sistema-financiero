@@ -76,4 +76,11 @@ $monthStart = date('Y-m-01');
     </div>
 <?php endif; ?>
 
+<?php if (!empty($reportGenerated)): ?>
+    <script>
+        alert('Informe de Estado de Resultados generado correctamente.');
+    </script>
+<?php endif; ?>
+
+
 <?php include BASE_PATH . '/views/layouts/footer.php'; ?>

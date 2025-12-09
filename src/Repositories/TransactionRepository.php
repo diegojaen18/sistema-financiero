@@ -28,7 +28,7 @@ class TransactionRepository
                 GROUP BY t.id
                 ORDER BY t.transaction_date DESC, t.id DESC";
 
-        return $this->db->query($sql)->fetchAll();
+        return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function findById(int $id): ?array
@@ -43,7 +43,7 @@ class TransactionRepository
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id]);
-        $tx = $stmt->fetch();
+        $tx = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $tx ?: null;
     }
@@ -62,7 +62,7 @@ class TransactionRepository
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $transactionId]);
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -106,6 +106,7 @@ class TransactionRepository
             return true;
         } catch (\PDOException $e) {
             $this->db->rollBack();
+            // Aquí podrías loguear el error si quieres
             return false;
         }
     }
@@ -116,7 +117,7 @@ class TransactionRepository
     public function deleteIfNotPosted(int $id): bool
     {
         $tx = $this->findById($id);
-        if (!$tx || $tx['is_posted']) {
+        if (!$tx || !empty($tx['is_posted'])) {
             return false;
         }
 
@@ -127,5 +128,68 @@ class TransactionRepository
         $sqlTx = "DELETE FROM transactions WHERE id = :id";
         $stmt  = $this->db->prepare($sqlTx);
         return $stmt->execute(['id' => $id]);
+    }
+
+    public function search(string $search = ''): array
+    {
+        $search = trim($search);
+
+        if ($search === '') {
+            return $this->findAll();
+        }
+
+        $sql = "
+            SELECT
+                t.*,
+                u.username AS created_by_username,
+                COALESCE(SUM(tl.debit), 0)  AS total_debit,
+                COALESCE(SUM(tl.credit), 0) AS total_credit
+            FROM transactions t
+            LEFT JOIN users u ON u.id = t.created_by
+            LEFT JOIN transaction_lines tl ON tl.transaction_id = t.id
+            WHERE t.description LIKE :term
+               OR t.reference   LIKE :term
+               OR t.transaction_date LIKE :term
+            GROUP BY t.id
+            ORDER BY t.transaction_date DESC, t.id DESC
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $like = '%' . $search . '%';
+        $stmt->bindValue(':term', $like, PDO::PARAM_STR);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Devuelve los totales de débitos y créditos acumulados para una cuenta.
+     * Se usa para calcular el saldo actual antes de registrar una nueva transacción.
+     */
+    public function getTotalsByAccountId(int $accountId): array
+    {
+        $sql = "
+            SELECT
+                COALESCE(SUM(debit), 0)  AS total_debit,
+                COALESCE(SUM(credit), 0) AS total_credit
+            FROM transaction_lines
+            WHERE account_id = :account_id
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['account_id' => $accountId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            return [
+                'total_debit'  => 0.0,
+                'total_credit' => 0.0,
+            ];
+        }
+
+        return [
+            'total_debit'  => (float)$row['total_debit'],
+            'total_credit' => (float)$row['total_credit'],
+        ];
     }
 }

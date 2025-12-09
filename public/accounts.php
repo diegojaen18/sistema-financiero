@@ -12,7 +12,9 @@ require_once BASE_PATH . '/src/Security/Validator.php';
 require_once BASE_PATH . '/src/Security/Sanitizer.php';
 require_once BASE_PATH . '/src/Security/SessionManager.php';
 require_once BASE_PATH . '/config/security.php';
+
 require_once BASE_PATH . '/src/Repositories/AccountRepository.php';
+require_once BASE_PATH . '/src/Services/AuthorizationService.php';
 require_once BASE_PATH . '/src/Controllers/AccountController.php';
 
 use App\Security\SessionManager;
@@ -21,6 +23,9 @@ use App\Controllers\AccountController;
 SessionManager::requireLogin();
 
 $controller = new AccountController();
+
+// Soporte para buscador
+$search = $_GET['search'] ?? '';
 
 $action = $_GET['action'] ?? 'list';
 $id     = isset($_GET['id']) ? (int) $_GET['id'] : null;
@@ -55,5 +60,6 @@ switch ($action) {
         break;
 
     default:
-        $controller->listAccounts();
+        // Lista con filtro de búsqueda
+        $controller->listAccounts($search);
 }

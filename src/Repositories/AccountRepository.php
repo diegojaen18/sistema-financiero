@@ -103,4 +103,29 @@ class AccountRepository
         return $this->db->query($sql)->fetchAll();
     }
 
+    public function search(string $search = ''): array
+    {
+        $search = trim($search);
+
+        if ($search === '') {
+            return $this->findAll();
+        }
+
+        $sql = "
+            SELECT *
+            FROM accounts
+            WHERE code LIKE :term
+            OR name LIKE :term
+            ORDER BY code
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $like = '%' . $search . '%';
+        $stmt->bindValue(':term', $like, \PDO::PARAM_STR);
+        $stmt->execute();
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+
 }

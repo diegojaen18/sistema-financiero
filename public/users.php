@@ -14,11 +14,23 @@ require_once BASE_PATH . '/src/Security/SessionManager.php';
 require_once BASE_PATH . '/config/security.php';
 require_once BASE_PATH . '/src/Repositories/UserRepository.php';
 require_once BASE_PATH . '/src/Controllers/UserController.php';
+require_once BASE_PATH . '/src/Services/AuthorizationService.php';
 
 use App\Security\SessionManager;
 use App\Controllers\UserController;
+use App\Services\AuthorizationService;
 
 SessionManager::requireLogin();
+
+$authService = new AuthorizationService();
+$userId      = SessionManager::get('user_id');
+$isGerente   = $authService->userHasRoleName($userId, 'Gerente Financiero');
+
+// Gerente Financiero: no puede entrar a usuarios
+if ($isGerente) {
+    header('Location: dashboard.php?msg=noperm');
+    exit;
+}
 
 $controller = new UserController();
 
@@ -55,5 +67,6 @@ switch ($action) {
         break;
 
     default:
-        $controller->listUsers();
+        $search = $_GET['search'] ?? '';
+        $controller->listUsers($search);
 }

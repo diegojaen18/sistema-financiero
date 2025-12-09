@@ -19,6 +19,34 @@ include BASE_PATH . '/views/layouts/header.php';
     <?php endif; ?>
 <?php endif; ?>
 
+<section class="page-header">
+    <p class="page-header-subtitle">
+        Administra los usuarios del sistema. Usa el buscador para filtrar por nombre, usuario o correo electrónico.
+    </p>
+
+    <form class="search-form" method="get" action="<?= BASE_URL ?>/users.php">
+        <input type="hidden" name="action" value="list">
+        <div class="search-group">
+            <span class="search-icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20">
+                    <circle cx="8.5" cy="8.5" r="5.5"></circle>
+                    <line x1="12" y1="12" x2="17" y2="17"></line>
+                </svg>
+            </span>
+            <input
+                type="text"
+                name="search"
+                class="search-input"
+                placeholder="Buscar usuario..."
+                value="<?= htmlspecialchars($currentSearch ?? '') ?>"
+            >
+            <button type="submit" class="btn btn-primary btn-small btn-search">
+                Buscar
+            </button>
+        </div>
+    </form>
+</section>
+
 <a href="<?= BASE_URL ?>/users.php?action=create" class="btn btn-primary" style="margin-bottom:1rem;">Nuevo usuario</a>
 
 <table class="table">

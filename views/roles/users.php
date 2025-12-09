@@ -22,6 +22,31 @@ include BASE_PATH . '/views/layouts/header.php';
     como Contador, Gerente Financiero o Auditor.
 </p>
 
+<section class="page-header">
+
+    <form class="search-form" method="get" action="<?= BASE_URL ?>/roles.php">
+        <input type="hidden" name="action" value="list">
+        <div class="search-group">
+            <span class="search-icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20">
+                    <circle cx="8.5" cy="8.5" r="5.5"></circle>
+                    <line x1="12" y1="12" x2="17" y2="17"></line>
+                </svg>
+            </span>
+            <input
+                type="text"
+                name="search"
+                class="search-input"
+                placeholder="Buscar usuario..."
+                value="<?= htmlspecialchars($currentSearch ?? '') ?>"
+            >
+            <button type="submit" class="btn btn-primary btn-small btn-search">
+                Buscar
+            </button>
+        </div>
+    </form>
+</section>
+
 <table class="table">
     <thead>
         <tr>
@@ -29,7 +54,7 @@ include BASE_PATH . '/views/layouts/header.php';
             <th>Nombre</th>
             <th>Correo</th>
             <th>Activo</th>
-            <th>Roles asignados</th>
+            <th>Rol asignado</th>
             <th>Acciones</th>
         </tr>
     </thead>
@@ -49,7 +74,7 @@ include BASE_PATH . '/views/layouts/header.php';
                 <td><?= $u['is_active'] ? 'Sí' : 'No' ?></td>
                 <td><?= htmlspecialchars($roleNames) ?></td>
                 <td>
-                    <a href="<?= BASE_URL ?>/roles.php?action=edit&id=<?= (int)$u['id'] ?>">Gestionar roles</a>
+                    <a href="<?= BASE_URL ?>/roles.php?action=edit&id=<?= (int)$u['id'] ?>">Gestionar rol</a>
                 </td>
             </tr>
         <?php endforeach; ?>

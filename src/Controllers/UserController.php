@@ -7,33 +7,67 @@ use App\Repositories\UserRepository;
 use App\Security\Validator;
 use App\Security\Sanitizer;
 use App\Security\SessionManager;
+use App\Services\AuthorizationService;
 
 class UserController
 {
     private UserRepository $userRepo;
     private Validator $validator;
+    private AuthorizationService $authService;
 
     public function __construct()
     {
-        $this->userRepo  = new UserRepository();
-        $this->validator = new Validator();
+        $this->userRepo    = new UserRepository();
+        $this->validator   = new Validator();
+        $this->authService = new AuthorizationService();
     }
 
-    public function listUsers(): void
+    /**
+     * Solo Administrador puede gestionar usuarios.
+     */
+    private function requireAdmin(): void
     {
-        $users     = $this->userRepo->findAll();
-        $pageTitle = 'Usuarios - ' . APP_NAME;
+        $userId = SessionManager::get('user_id');
+        if (!$this->authService->userHasRoleName($userId, 'Administrador')) {
+            header('Location: dashboard.php?msg=noperm');
+            exit;
+        }
+    }
+
+    /**
+     * Lista de usuarios con soporte de búsqueda.
+     */
+    public function listUsers(string $search = ''): void
+    {
+        $this->requireAdmin();
+
+        $search = trim($search);
+
+        if ($search !== '') {
+            // Requiere que UserRepository tenga un método search($term)
+            $users = $this->userRepo->search($search);
+        } else {
+            $users = $this->userRepo->findAll();
+        }
+
+        $pageTitle     = 'Usuarios - ' . APP_NAME;
+        $currentSearch = $search;
+
         include BASE_PATH . '/views/users/list.php';
     }
 
     public function showCreate(array $errors = [], array $oldData = []): void
     {
+        $this->requireAdmin();
+
         $pageTitle = 'Nuevo usuario - ' . APP_NAME;
         include BASE_PATH . '/views/users/create.php';
     }
 
     public function handleCreate(): void
     {
+        $this->requireAdmin();
+
         $data   = Sanitizer::cleanArray($_POST);
         $errors = $this->validator->validateRequired(
             $data,
@@ -80,6 +114,8 @@ class UserController
 
     public function showEdit(int $id, array $errors = [], array $oldData = []): void
     {
+        $this->requireAdmin();
+
         $user = $this->userRepo->findById($id);
         if (!$user) {
             header('Location: users.php?msg=notfound');
@@ -92,6 +128,8 @@ class UserController
 
     public function handleEdit(int $id): void
     {
+        $this->requireAdmin();
+
         $data = Sanitizer::cleanArray($_POST);
 
         $errors = $this->validator->validateRequired(
@@ -140,6 +178,8 @@ class UserController
 
     public function toggleStatus(int $id): void
     {
+        $this->requireAdmin();
+
         $user = $this->userRepo->findById($id);
         if (!$user) {
             header('Location: users.php?msg=notfound');

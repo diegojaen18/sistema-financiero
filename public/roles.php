@@ -19,13 +19,24 @@ require_once BASE_PATH . '/src/Controllers/RoleController.php';
 
 use App\Security\SessionManager;
 use App\Controllers\RoleController;
+use App\Services\AuthorizationService;
 
 SessionManager::requireLogin();
 
-$controller = new RoleController();
+$authService = new AuthorizationService();
+$userId      = SessionManager::get('user_id');
+$isAdmin     = $authService->userHasRoleName($userId, 'Administrador');
 
-$action = $_GET['action'] ?? 'list';
-$id     = isset($_GET['id']) ? (int)$_GET['id'] : null;
+// Solo el Administrador puede entrar a roles.php
+if (!$isAdmin) {
+    header('Location: dashboard.php?msg=noperm');
+    exit;
+}
+
+$controller = new RoleController();
+$search     = $_GET['search'] ?? '';
+$action     = $_GET['action'] ?? 'list';
+$id         = isset($_GET['id']) ? (int)$_GET['id'] : null;
 
 switch ($action) {
     case 'edit':
@@ -45,5 +56,5 @@ switch ($action) {
         break;
 
     default:
-        $controller->listUsers();
+        $controller->listUsers($search);
 }

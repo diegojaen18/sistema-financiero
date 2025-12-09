@@ -497,3 +497,150 @@ select:focus {
     }
 }
 
+/* ========= CABECERA DE PÁGINA + BARRA DE BÚSQUEDA ========= */
+
+.page-header {
+    margin-bottom: 1.5rem;
+}
+
+.page-header-title {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.page-header-subtitle {
+    margin: 0.3rem 0 0.8rem;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    max-width: 650px;
+}
+
+/* Formulario de búsqueda debajo del texto */
+.search-form {
+    margin-top: 0.25rem;
+}
+
+.search-group {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    max-width: 650px;
+    background: #ffffff;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    padding: 0.25rem 0.35rem 0.25rem 0.45rem;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+}
+
+.search-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: var(--color-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.search-icon svg {
+    width: 16px;
+    height: 16px;
+    stroke: #ffffff;
+    stroke-width: 2;
+    fill: none;
+}
+
+/* Input largo dentro de la cápsula */
+.search-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    font-size: 0.9rem;
+    padding: 0.4rem 0.5rem;
+    font-family: inherit;
+    background: transparent;
+}
+
+/* Evitar que el estilo general de inputs meta borde extra aquí */
+.search-input:focus {
+    border: none;
+    box-shadow: none;
+}
+
+/* Botón Buscar en azul, redondeado */
+.btn-search {
+    border-radius: 999px;
+    padding-inline: 0.85rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+/* Ajustes responsive pequeños */
+@media (max-width: 640px) {
+    .search-group {
+        max-width: 100%;
+    }
+}
+
+/* ---------- Modal emergente genérico ---------- */
+
+.app-modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;              /* se muestra con display:flex */
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    pointer-events: auto;
+    font-family: inherit;
+}
+
+.app-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45); /* fondo oscuro semi-transparente, no blanco */
+    backdrop-filter: blur(2px);
+}
+
+.app-modal-dialog {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    width: 90%;
+    background: #ffffff;
+    border-radius: 0.75rem;
+    padding: 1.5rem 1.75rem;
+    box-shadow: 0 20px 45px rgba(0,0,0,0.25);
+}
+
+.app-modal-dialog h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.app-modal-dialog p {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+}
+
+.app-modal-extra {
+    max-height: 180px;
+    overflow: auto;
+    background: #0f172a;
+    color: #e5e7eb;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+body.has-modal {
+    overflow: hidden; /* evita scroll del fondo cuando el modal está abierto */
+}
+
