@@ -43,23 +43,48 @@ class ReportController
 
         if ($search !== '') {
             $searchLower = mb_strtolower($search, 'UTF-8');
+
             $reports = array_filter($reports, function ($r) use ($searchLower) {
-                $joined = mb_strtolower(
-                    ($r['report_type'] ?? '') . ' ' .
-                    ($r['period_start'] ?? '') . ' ' .
-                    ($r['period_end'] ?? '') . ' ' .
-                    ($r['generated_by_username'] ?? ''),
-                    'UTF-8'
-                );
-                return strpos($joined, $searchLower) !== false;
+                $typeCode = $r['report_type'] ?? '';
+
+                // Etiqueta legible del tipo
+                $typeLabel = ($typeCode === 'income_statement')
+                    ? 'estado de resultados'
+                    : 'balance general';
+
+                $periodStart = $r['period_start'] ?? '';
+                $periodEnd   = $r['period_end']   ?? '';
+
+                // Período tal como lo muestras en la tabla
+                if ($periodStart === $periodEnd || empty($periodEnd)) {
+                    $periodDisplay = $periodStart;
+                } else {
+                    $periodDisplay = $periodStart . ' al ' . $periodEnd;
+                }
+
+                $generatedBy = $r['generated_by_username'] ?? '';
+
+                // Texto combinado donde vamos a buscar
+                $joined = $typeCode . ' ' .
+                        $typeLabel . ' ' .
+                        $periodStart . ' ' .
+                        $periodEnd . ' ' .
+                        $periodDisplay . ' ' .
+                        $generatedBy;
+
+                $joinedLower = mb_strtolower($joined, 'UTF-8');
+
+                return strpos($joinedLower, $searchLower) !== false;
             });
         }
 
         $pageTitle     = 'Informes Financieros - ' . APP_NAME;
         $currentSearch = $search;
 
+        // Estas variables las usa la vista list.php
         include BASE_PATH . '/views/reports/list.php';
     }
+
 
 
     public function incomeStatement(): void

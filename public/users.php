@@ -7,27 +7,27 @@ require_once BASE_PATH . '/config/database.php';
 require_once BASE_PATH . '/src/Database/Connection.php';
 
 require_once BASE_PATH . '/src/Interfaces/ValidatorInterface.php';
-
+require_once BASE_PATH . '/config/security.php';
 require_once BASE_PATH . '/src/Security/Validator.php';
 require_once BASE_PATH . '/src/Security/Sanitizer.php';
 require_once BASE_PATH . '/src/Security/SessionManager.php';
-require_once BASE_PATH . '/config/security.php';
+
 require_once BASE_PATH . '/src/Repositories/UserRepository.php';
-require_once BASE_PATH . '/src/Controllers/UserController.php';
 require_once BASE_PATH . '/src/Services/AuthorizationService.php';
+require_once BASE_PATH . '/src/Controllers/UserController.php';
 
 use App\Security\SessionManager;
-use App\Controllers\UserController;
 use App\Services\AuthorizationService;
+use App\Controllers\UserController;
 
 SessionManager::requireLogin();
 
+// Solo el Administrador puede gestionar usuarios
 $authService = new AuthorizationService();
 $userId      = SessionManager::get('user_id');
-$isGerente   = $authService->userHasRoleName($userId, 'Gerente Financiero');
+$isAdmin     = $authService->userHasRoleName($userId, 'Administrador');
 
-// Gerente Financiero: no puede entrar a usuarios
-if ($isGerente) {
+if (!$isAdmin) {
     header('Location: dashboard.php?msg=noperm');
     exit;
 }
@@ -35,7 +35,7 @@ if ($isGerente) {
 $controller = new UserController();
 
 $action = $_GET['action'] ?? 'list';
-$id     = isset($_GET['id']) ? (int) $_GET['id'] : null;
+$id     = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 switch ($action) {
     case 'create':
@@ -47,10 +47,11 @@ switch ($action) {
         break;
 
     case 'edit':
-        if ($id === null) {
-            header('Location: users.php');
+        if ($id <= 0) {
+            header('Location: users.php?msg=notfound');
             exit;
         }
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $controller->handleEdit($id);
         } else {
@@ -59,14 +60,15 @@ switch ($action) {
         break;
 
     case 'toggle':
-        if ($id !== null) {
-            $controller->toggleStatus($id);
-        } else {
-            header('Location: users.php');
+        if ($id <= 0) {
+            header('Location: users.php?msg=notfound');
+            exit;
         }
+        $controller->toggleStatus($id);
         break;
 
-    default:
+    default: // list
         $search = $_GET['search'] ?? '';
         $controller->listUsers($search);
+        break;
 }

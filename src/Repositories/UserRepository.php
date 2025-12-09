@@ -20,7 +20,7 @@ class UserRepository
         $sql  = "SELECT * FROM users WHERE username = :username AND is_active = 1 LIMIT 1";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['username' => $username]);
-        $user = $stmt->fetch();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $user ?: null;
     }
@@ -32,14 +32,13 @@ class UserRepository
         $stmt->execute(['id' => $userId]);
     }
 
-    /* === NUEVO: CRUD BÁSICO === */
+    /* === CRUD BÁSICO === */
 
     public function findAll(): array
     {
-        $sql = "SELECT id, username, full_name, email, is_active, created_at 
-                FROM users
-                ORDER BY id ASC";
-        return $this->db->query($sql)->fetchAll();
+        // Seleccionamos TODO para evitar problemas con columnas opcionales
+        $sql = "SELECT * FROM users ORDER BY id ASC";
+        return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function findById(int $id): ?array
@@ -47,7 +46,7 @@ class UserRepository
         $sql  = "SELECT * FROM users WHERE id = :id LIMIT 1";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id]);
-        $user = $stmt->fetch();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $user ?: null;
     }
@@ -118,30 +117,45 @@ class UserRepository
         ]);
     }
 
+    /**
+     * Búsqueda simple por username, full_name o email.
+     * Para evitar más problemas de SQL, si hay lío simplemente devolvemos findAll().
+     */
     public function search(string $search = ''): array
     {
         $search = trim($search);
 
+        // Si no hay término de búsqueda, devolvemos todo
         if ($search === '') {
-            // comportamiento por defecto
             return $this->findAll();
         }
 
-        $sql = "
-            SELECT *
-            FROM users
-            WHERE username  LIKE :term
-            OR full_name LIKE :term
-            OR email     LIKE :term
-            ORDER BY id DESC
-        ";
+        // Traemos todos los usuarios y filtramos en PHP (igual que en transacciones)
+        $allUsers = $this->findAll();
 
-        $stmt = $this->db->prepare($sql);
-        $like = '%' . $search . '%';
-        $stmt->bindValue(':term', $like, \PDO::PARAM_STR);
-        $stmt->execute();
+        $toLower = function (string $value): string {
+            if (function_exists('mb_strtolower')) {
+                return mb_strtolower($value, 'UTF-8');
+            }
+            return strtolower($value);
+        };
 
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $term = $toLower($search);
+        $filtered = [];
+
+        foreach ($allUsers as $user) {
+            $haystack = $toLower(
+                ($user['username']  ?? '') . ' ' .
+                ($user['full_name'] ?? '') . ' ' .
+                ($user['email']     ?? '')
+            );
+
+            if (strpos($haystack, $term) !== false) {
+                $filtered[] = $user;
+            }
+        }
+
+        return $filtered;
     }
 
 }

@@ -38,7 +38,8 @@ include BASE_PATH . '/views/layouts/header.php';
                 name="search"
                 class="search-input"
                 placeholder="Buscar usuario..."
-                value="<?= htmlspecialchars($currentSearch ?? '') ?>"
+                value="<?= htmlspecialchars($currentSearch ?? '', ENT_QUOTES, 'UTF-8') ?>"
+
             >
             <button type="submit" class="btn btn-primary btn-small btn-search">
                 Buscar
@@ -57,13 +58,12 @@ include BASE_PATH . '/views/layouts/header.php';
             <th>Nombre completo</th>
             <th>Email</th>
             <th>Activo</th>
-            <th>Creado</th>
             <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
     <?php if (empty($users)): ?>
-        <tr><td colspan="7">No hay usuarios registrados.</td></tr>
+        <tr><td colspan="6">No hay usuarios registrados.</td></tr>
     <?php else: ?>
         <?php foreach ($users as $user): ?>
             <tr>
@@ -71,12 +71,11 @@ include BASE_PATH . '/views/layouts/header.php';
                 <td><?= htmlspecialchars($user['username']) ?></td>
                 <td><?= htmlspecialchars($user['full_name']) ?></td>
                 <td><?= htmlspecialchars($user['email']) ?></td>
-                <td><?= $user['is_active'] ? 'Sí' : 'No' ?></td>
-                <td><?= htmlspecialchars($user['created_at']) ?></td>
+                <td><?= !empty($user['is_active']) ? 'Sí' : 'No' ?></td>
                 <td>
                     <a href="<?= BASE_URL ?>/users.php?action=edit&id=<?= (int)$user['id'] ?>">Editar</a> |
                     <a href="<?= BASE_URL ?>/users.php?action=toggle&id=<?= (int)$user['id'] ?>">
-                        <?= $user['is_active'] ? 'Desactivar' : 'Activar' ?>
+                        <?= !empty($user['is_active']) ? 'Desactivar' : 'Activar' ?>
                     </a>
                 </td>
             </tr>
@@ -84,5 +83,6 @@ include BASE_PATH . '/views/layouts/header.php';
     <?php endif; ?>
     </tbody>
 </table>
+
 
 <?php include BASE_PATH . '/views/layouts/footer.php'; ?>

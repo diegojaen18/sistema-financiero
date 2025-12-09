@@ -38,7 +38,8 @@ include BASE_PATH . '/views/layouts/header.php';
                 name="search"
                 class="search-input"
                 placeholder="Buscar usuario..."
-                value="<?= htmlspecialchars($currentSearch ?? '') ?>"
+                value="<?= htmlspecialchars($currentSearch ?? '', ENT_QUOTES, 'UTF-8') ?>"
+
             >
             <button type="submit" class="btn btn-primary btn-small btn-search">
                 Buscar
@@ -70,7 +71,7 @@ include BASE_PATH . '/views/layouts/header.php';
             <tr>
                 <td><?= htmlspecialchars($u['username']) ?></td>
                 <td><?= htmlspecialchars($u['full_name']) ?></td>
-                <td><?= htmlspecialchars($u['email']) ?></td>
+                <td><?= htmlspecialchars($u['email']) ?></td><td><?= !empty($u['is_active']) ? 'Sí' : 'No' ?></td>
                 <td><?= $u['is_active'] ? 'Sí' : 'No' ?></td>
                 <td><?= htmlspecialchars($roleNames) ?></td>
                 <td>
